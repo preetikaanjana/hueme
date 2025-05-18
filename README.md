@@ -38,14 +38,16 @@ In many communities, expressing emotions is discouraged or misunderstood. HueMe 
 
 ##  How to Run
 
- Clone the repo:
+Clone the repo:
    ```bash
    git clone https://github.com/yourusername/HueMe.git
    cd HueMe
    npm install
    npm run dev
+  ```
 
 ---
+
 
 ## Future Additions
  AI-powered mood suggestions based on journal entries
