@@ -27,7 +27,7 @@ In many communities, expressing emotions is discouraged or misunderstood. HueMe 
 
 ---
 
-## 🛠 Tech Stack
+##  Tech Stack
 
 - **Frontend**: Vite + React + Tailwind CSS  
 - **Backend**: Firebase (Firestore & Auth)  
@@ -38,7 +38,7 @@ In many communities, expressing emotions is discouraged or misunderstood. HueMe 
 
 ##  How to Run
 
-1. Clone the repo:
+ Clone the repo:
    ```bash
    git clone https://github.com/yourusername/HueMe.git
    cd HueMe
@@ -49,21 +49,10 @@ In many communities, expressing emotions is discouraged or misunderstood. HueMe 
 
 ## Future Additions
  AI-powered mood suggestions based on journal entries
-
  Daily mood reminders
-
  Gamification with emotion badges
-
  Mobile-first redesign
-
  Mood privacy lock & encryption
-
----
-
-## Acknowledgements
-Inspired by mental health awareness in underrepresented communities.
-
-Thanks to OpenAI, Firebase, and React for powering this journey.
 
 ---
 
