@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { 
   Box, 
   Container, 
@@ -18,18 +18,13 @@ import {
   ListItemText,
   ListItemIcon,
   useMediaQuery,
-  useTheme,
-  Stack,
-  Fade,
-  Zoom
+  useTheme
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import HistoryIcon from '@mui/icons-material/History';
 import InfoIcon from '@mui/icons-material/Info';
 import HomeIcon from '@mui/icons-material/Home';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import MoodButtons from './components/MoodButtons';
 import Calendar from './components/Calendar';
 import Analytics from './components/Analytics';
@@ -40,52 +35,6 @@ import About from './pages/About';
 import Journal from './pages/Journal';
 import Welcome from './pages/Welcome';
 import EmojiQuotes from './components/EmojiQuotes';
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#6B8E23',
-      light: '#8BAE3F',
-      dark: '#4A6B0F',
-    },
-    secondary: {
-      main: '#FF6B6B',
-      light: '#FF8E8E',
-      dark: '#E64A4A',
-    },
-    background: {
-      default: '#F8F9FA',
-      paper: '#FFFFFF',
-    },
-  },
-  typography: {
-    fontFamily: '"Poppins", "Roboto", "Helvetica", "Arial", sans-serif',
-    h3: {
-      fontWeight: 700,
-      letterSpacing: '-0.5px',
-    },
-    h6: {
-      fontWeight: 500,
-    },
-    subtitle1: {
-      fontFamily: '"Playfair Display", serif',
-      fontStyle: 'italic',
-    },
-  },
-  shape: {
-    borderRadius: 12,
-  },
-  components: {
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          backdropFilter: 'blur(10px)',
-          boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
-        },
-      },
-    },
-  },
-});
 
 export type Mood = {
   emoji: string;
@@ -139,7 +88,7 @@ function App() {
     setSelectedMood(mood);
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);
   };
 
@@ -212,7 +161,7 @@ function App() {
                   May 2024
                 </Typography>
               </Box>
-              <Calendar entries={entries} moods={moods} />
+              <Calendar entries={entries} />
             </Paper>
             <Paper 
               elevation={3} 
@@ -341,7 +290,6 @@ function App() {
 
   // Determine if the current path is the root path or welcome path
   const isRootOrWelcomePath = location.pathname === '/' || location.pathname === '/welcome';
-  const isRootPath = location.pathname === '/';
 
   return (
     <ThemeProvider theme={theme}>

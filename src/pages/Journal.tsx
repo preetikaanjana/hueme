@@ -1,14 +1,5 @@
-import React, { useState } from 'react';
-import { 
-  Box, 
-  Container, 
-  Typography, 
-  Paper, 
-  Button,
-  IconButton,
-  useTheme,
-  useMediaQuery
-} from '@mui/material';
+import { useState } from 'react';
+import { Box, Container, Typography, Paper, Button } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { useNavigate } from 'react-router-dom';
 
@@ -35,8 +26,6 @@ const moods: Mood[] = [
 
 export default function Journal() {
   const [selectedMoodFilter, setSelectedMoodFilter] = useState<string | null>(null);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
 
   // Get entries from localStorage

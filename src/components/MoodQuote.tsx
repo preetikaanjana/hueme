@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Paper, Fade } from '@mui/material';
+import { Typography, Paper, Fade } from '@mui/material';
 import type { Mood } from '../App';
 
 interface MoodQuoteProps {

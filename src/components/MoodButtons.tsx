@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Box, Button, TextField, Typography, Zoom } from '@mui/material';
 import type { Mood } from '../App';
 

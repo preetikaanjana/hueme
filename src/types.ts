@@ -1,6 +1,11 @@
-export type Mood = {
+export interface Mood {
+  label: string;
   emoji: string;
   color: string;
-  label: string;
-  type: string;
-}; 
+}
+
+export interface MoodEntry {
+  date: string;
+  mood: Mood;
+  note?: string;
+} 

@@ -1,13 +1,12 @@
 import React from 'react';
-import { Box, Typography, Paper } from '@mui/material';
-import { Mood, MoodEntry } from '../App';
+import { Box, Typography } from '@mui/material';
+import { MoodEntry } from '../types';
 
 interface CalendarProps {
   entries: MoodEntry[];
-  moods: Mood[];
 }
 
-const Calendar: React.FC<CalendarProps> = ({ entries, moods }) => {
+const Calendar: React.FC<CalendarProps> = ({ entries }) => {
   const today = new Date();
   const currentMonth = today.getMonth();
   const currentYear = today.getFullYear();

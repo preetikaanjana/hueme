@@ -1,234 +1,177 @@
 import React from 'react';
-import { Box, Typography, Grid, Paper, Fade } from '@mui/material';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { format, subDays, startOfWeek, endOfWeek } from 'date-fns';
-import type { Mood, MoodEntry } from '../App';
-import { useTheme } from '@mui/material/styles';
+import { Box, Typography, Paper } from '@mui/material';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { startOfWeek, endOfWeek } from 'date-fns';
+import { Mood, MoodEntry } from '../types';
 
 interface AnalyticsProps {
   entries: MoodEntry[];
   moods: Mood[];
 }
 
-const Analytics = ({ entries, moods }: AnalyticsProps) => {
-  const theme = useTheme();
-
-  console.log("Analytics component theme:", theme);
-
-  const getMoodCounts = () => {
-    const counts = moods.map(mood => ({
-      name: mood.label,
-      value: entries.filter(entry => entry.mood.emoji === mood.emoji).length,
-      color: mood.color,
-    }));
-    return counts.filter(count => count.value > 0);
-  };
-
+const Analytics: React.FC<AnalyticsProps> = ({ entries, moods }) => {
   const getWeeklyStats = (): { weeklyCount: number; mostCommonMood: (Omit<Mood, 'emoji'> & { value: number }) | null } => {
-    const startOfThisWeek = startOfWeek(new Date(), { weekStartsOn: 0 });
-    const endOfThisWeek = endOfWeek(new Date(), { weekStartsOn: 0 });
+    const now = new Date();
+    const weekStart = startOfWeek(now);
+    const weekEnd = endOfWeek(now);
 
     const weeklyEntries = entries.filter(entry => {
       const entryDate = new Date(entry.date);
-      return entryDate >= startOfThisWeek && entryDate <= endOfThisWeek;
+      return entryDate >= weekStart && entryDate <= weekEnd;
     });
 
-    const weeklyMoodCounts = moods.map(mood => ({
-      name: mood.label,
-      value: weeklyEntries.filter(entry => entry.mood.emoji === mood.emoji).length,
-    }));
+    const moodCounts = weeklyEntries.reduce((acc, entry) => {
+      const moodLabel = entry.mood.label;
+      acc[moodLabel] = (acc[moodLabel] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
 
-    const mostCommonMood = weeklyMoodCounts.reduce((a, b) => a.value > b.value ? a : b, { name: 'None', value: 0 });
+    let mostCommonMood = null;
+    let maxCount = 0;
 
-    // Find the color for the most common mood
-    const mostCommonMoodColor = moods.find(mood => mood.label === mostCommonMood.name)?.color || 'transparent';
+    Object.entries(moodCounts).forEach(([label, count]) => {
+      if (count > maxCount) {
+        maxCount = count;
+        mostCommonMood = {
+          label,
+          color: moods.find(m => m.label === label)?.color || '#000000',
+          value: count
+        };
+      }
+    });
 
     return {
       weeklyCount: weeklyEntries.length,
-      mostCommonMood: mostCommonMood.name !== 'None' ? { ...mostCommonMood, color: mostCommonMoodColor } : null,
+      mostCommonMood
     };
   };
 
-  const moodCounts = getMoodCounts();
   const weeklyStats = getWeeklyStats();
 
-  const getMoodInsight = (moodName: string | null) => {
-    if (!moodName) return "Keep tracking to see your mood patterns!";
+  const getMoodInsight = (moodLabel: string | null): string => {
+    if (!moodLabel) return "No mood data available for this week.";
     
-    switch (moodName) {
-      case 'Happy':
-        return "You felt most joyful this week! 🌞 Keep shining.";
-      case 'Good':
-        return "A good week! Little moments of positivity add up. ✨";
-      case 'Neutral':
-        return "A balanced week. Observe your feelings with kindness.🧘";
-      case 'Sad':
-        return "It was a challenging week. Be gentle with yourself. 🌱";
-      case 'Very Sad':
-        return "Feeling low this week. Remember, it's okay to seek support. ❤️";
-      default:
-        return "Reflect on the emotions that colored your week.";
-    }
+    const insights: Record<string, string> = {
+      'Very Happy': "You've been feeling great this week! Keep spreading that joy!",
+      'Happy': "A positive week overall! Your happiness is shining through.",
+      'Neutral': "A balanced week. Remember, it's okay to feel neutral sometimes.",
+      'Sad': "It's been a tough week. Remember, brighter days are ahead.",
+      'Very Sad': "This week has been challenging. Remember, it's okay to reach out for support."
+    };
+
+    return insights[moodLabel] || "Keep tracking your moods to see patterns emerge.";
   };
 
-  const moodInsight = getMoodInsight(weeklyStats.mostCommonMood?.name || null);
+  const moodInsight = getMoodInsight(weeklyStats.mostCommonMood?.label || null);
+
+  const chartData = moods.map(mood => ({
+    name: mood.label,
+    value: entries.filter(entry => entry.mood.label === mood.label).length
+  }));
+
+  const COLORS = moods.map(mood => mood.color);
 
   return (
-    <Box>
-      <Typography 
-        variant="h6" 
-        gutterBottom 
-        sx={{ 
-          textAlign: 'center',
-          mb: 4,
-          color: 'text.primary',
-          fontWeight: 500,
-        }}
-      >
-        Mood Analytics
+    <Box sx={{ p: 3 }}>
+      <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
+        Your Mood Analytics
       </Typography>
-      <Grid container spacing={4}>
-        <Grid item xs={12} md={6}>
-          <Fade in={true} timeout={1000}>
-            <Paper 
-              elevation={3}
-              sx={{
-                p: 4,
-                background: 'rgba(255, 255, 255, 0.6)',
-                backdropFilter: 'blur(10px)',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-                borderRadius: '16px',
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-              }}
-            >
-              <Typography 
-                variant="h6"
-                gutterBottom 
-                sx={{ 
-                  textAlign: 'center',
-                  color: 'text.primary',
-                  fontWeight: 600,
-                  mb: 3,
-                }}
-              >
-                Mood Distribution
+
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+        {/* Weekly Overview */}
+        <Paper
+          elevation={3}
+          sx={{
+            p: 3,
+            flex: 1,
+            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+            borderRadius: 2,
+          }}
+        >
+          <Typography variant="h6" sx={{ mb: 2, color: 'text.primary' }}>
+            This Week's Overview
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box>
+              <Typography variant="subtitle2" color="text.secondary">
+                Entries This Week
               </Typography>
-              <Box sx={{ height: 200, width: '100%', flexGrow: 1 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={moodCounts}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      innerRadius={40}
-                      animationDuration={800}
-                      isAnimationActive={true}
-                    >
-                      {moodCounts.map((entry, index) => (
-                        <Cell 
-                          key={`cell-${index}`}
-                          fill={entry.color}
-                          stroke={theme.palette.background.paper}
-                          strokeWidth={2}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                        borderRadius: '8px',
-                        border: 'none',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                        fontSize: '0.9rem',
-                        color: 'text.primary',
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </Box>
-              {moodCounts.length > 0 && (
-                <Typography variant="body2" sx={{ mt: 3, color: 'text.secondary', fontStyle: 'italic', textAlign: 'center' }}>
-                  {moodInsight}
+              <Typography variant="h4" sx={{ color: 'primary.main' }}>
+                {weeklyStats.weeklyCount}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="subtitle2" color="text.secondary">
+                Most Common Mood
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="h4" sx={{ color: 'primary.main' }}>
+                  {weeklyStats.mostCommonMood?.label}
                 </Typography>
-              )}
-            </Paper>
-          </Fade>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Fade in={true} timeout={1000} style={{ transitionDelay: '300ms' }}>
-            <Box sx={{ p: 0 }}>
-              <Paper 
-                elevation={3}
-                sx={{ 
-                  p: 4,
-                  mb: 3,
-                  background: 'rgba(255, 255, 255, 0.6)',
-                  backdropFilter: 'blur(10px)',
-                  boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-                  borderRadius: '16px',
-                }}
-              >
-                <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', fontWeight: 600 }}>
-                  Weekly Stats
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="h4" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                    {weeklyStats.weeklyCount}
-                  </Typography>
-                  {weeklyStats.weeklyCount > 0 ? (
-                    <Box component="span" sx={{ color: 'success.main', fontSize: '1.5rem' }}>
-                      ↑
-                    </Box>
-                  ) : (
-                    <Box component="span" sx={{ color: 'text.secondary', fontSize: '1.5rem' }}>
-                      -
-                    </Box>
-                  )}
-                </Box>
-                <Typography variant="body2" sx={{ opacity: 0.8, color: 'text.secondary' }}>
-                  Entries this week
-                </Typography>
-              </Paper>
-              <Paper 
-                elevation={3}
-                sx={{ 
-                  p: 4,
-                  background: 'rgba(255, 255, 255, 0.6)',
-                  backdropFilter: 'blur(10px)',
-                  boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-                  borderRadius: '16px',
-                }}
-              >
-                <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', fontWeight: 600 }}>
-                  Most Common Mood
-                </Typography>
-                {weeklyStats.mostCommonMood ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Typography variant="h4" sx={{ fontWeight: 700, color: weeklyStats.mostCommonMood.color }}>
-                      {weeklyStats.mostCommonMood.name}
-                    </Typography>
-                    {moods.find(m => m.label === weeklyStats.mostCommonMood?.name)?.emoji && (
-                      <Typography variant="h4">
-                        {moods.find(m => m.label === weeklyStats.mostCommonMood?.name)?.emoji}
-                      </Typography>
-                    )}
-                  </Box>
-                ) : (
-                  <Typography variant="body2" sx={{ opacity: 0.8, color: 'text.secondary' }}>
-                    Not enough data yet this week.
+                {moods.find(m => m.label === weeklyStats.mostCommonMood?.label)?.emoji && (
+                  <Typography variant="h4">
+                    {moods.find(m => m.label === weeklyStats.mostCommonMood?.label)?.emoji}
                   </Typography>
                 )}
-              </Paper>
+              </Box>
             </Box>
-          </Fade>
-        </Grid>
-      </Grid>
+          </Box>
+        </Paper>
+
+        {/* Mood Distribution */}
+        <Paper
+          elevation={3}
+          sx={{
+            p: 3,
+            flex: 1,
+            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+            borderRadius: 2,
+          }}
+        >
+          <Typography variant="h6" sx={{ mb: 2, color: 'text.primary' }}>
+            Mood Distribution
+          </Typography>
+          <Box sx={{ height: 300 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {chartData.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </Box>
+        </Paper>
+      </Box>
+
+      {/* Mood Insight */}
+      <Paper
+        elevation={3}
+        sx={{
+          p: 3,
+          mt: 3,
+          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+          borderRadius: 2,
+        }}
+      >
+        <Typography variant="h6" sx={{ mb: 2, color: 'text.primary' }}>
+          Weekly Insight
+        </Typography>
+        <Typography variant="body1" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
+          {moodInsight}
+        </Typography>
+      </Paper>
     </Box>
   );
 };
